@@ -1,0 +1,176 @@
+1) mkdir dotnet-docker
+2) cd dotnet-docker
+3) dotnet new webapp -n myWebApp -o src --no-https
+
+//-o src: This specifies the output directory
+// for the generated project files.
+
+//--no-https: This option indicates that you don't
+// want to enable HTTPS for your web application
+
+4) cd /path/to/dotnet-docker/src
+5) dotnet run --urls http://localhost:5000
+//run in localhost 5000  port
+
+6) In the dotnet-docker directory, create a file named Dockerfile. 
+   create Dockerfile
+
+7) 
+├── dotnet-docker
+│ ├── src/
+│ ├── Dockerfile
+│ ├── .dockerignore
+
+8) cd /path/to/dotnet-docker
+9) docker build --tag dotnet-docker .
+
+10)docker images
+
+11)docker tag dotnet-docker:latest dotnet-docker:v1.0.0
+for create new tag
+The docker tag command creates a new tag for an image. 
+It does not create a new image. 
+The tag points to the same image and is just another way to reference the image.
+
+
+
+You can see that we have two images that start with dotnet-docker
+12)docker rmi dotnet-docker:v1.0.0
+command. The rmi command stands for remove image.
+
+	13)docker run -d -p 5000:80 dotnet-docker
+
+	14)docker restart wonderful_kalam
+
+15)docker run -d -p 5000:80 --name dotnet-app dotnet-docker
+*
+
+16)docker volume create postgres-data
+Let’s create our data volume now.
+
+17)docker network create postgres-net
+       Now we’ll create a network that our application and database will use to talk to each 
+       other. The network is called a user-defined bridge network and gives us a nice DNS 
+       lookup service which we can use when creating our connection string.
+
+
+18)docker run --rm -d -v postgres-data:/var/lib/postgresql/data --network postgres-net  --name db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=example postgres 
+	Now we can run PostgreSQL in a container and attach to the volume and network we created above.
+	Docker pulls the image from Hub and runs it for you locally. In the following command, 
+	option -v is for starting the container with the volume. For more information, see Docker volumes.
+
+19)docker exec -ti db psql -U postgres
+	Now, let’s make sure that our PostgreSQL database is running and that we can connect to it. 
+	Connect to the running PostgreSQL database inside the container using the following command:
+
+
+Update the application to connect to the database
+In the above command, we logged in to the PostgreSQL database by passing the psql command to the db container.
+
+Next, we’ll update the sample application we created in the Build images module.
+
+Let’s add a package to allow the app to talk to a database and update the source files. 
+On your local machine, open a terminal, change directory to the src directory and run the following command:
+
+
+
+20) cd /path/to/dotnet-docker/src
+21) dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+
+22)In the src directory, create a Models folder. Inside the Models folder
+   create a file named Student.cs and add the following code to Student.cs:
+
+23)In the src directory, create a Data folder. Inside the Data folder 
+    create a file named SchoolContext.cs and add the following code to SchoolContext.cs
+
+24)In the Program.cs file located in the src directory, replace the contents with the following code:
+
+25)In the appsettings.json file located in the src directory,
+   replace the contents with the following code:
+
+26)In the Index.cshtml file located in the src\Pages directory,
+   replace the contents with the following code:
+
+27)In the Index.cshtml.cs file located in the src\Pages directory, 
+   replace the contents with the following code:
+
+28)Now we can rebuild our image. Open a terminal, change directory
+   to the dotnet-docker directory and run the following command:
+
+29) "using Microsoft.EntityFrameworkCore;
+     using myWebApp.Data;"
+Add in file Pragma.cs
+
+
+
+30)docker build --tag dotnet-docker .
+31)docker ps
+32)docker image prune 
+33)docker system prune --all
+
+
+
+34)docker build --tag dotnet-docker .
+Now, let’s run our container on the same network as the database. This allows us to access the database by its container name.
+35)docker run  --rm -d  --network postgres-net --name dotnet-app -p 5000:80 dotnet-docker 
+http://localhost:5000
+
+
+36)docker run  --rm -d --network postgres-net  --name db-admin  -p 8080:8080  adminer
+http://localhost:8080
+    Connect Adminer and populate the database
+    You now have an application accessing the database. Although the application created a database and table,
+    it did not create any entries. Let’s connect Adminer to manage our database and create a database entry.
+
+
+System: PostgreSQL
+Server: db
+Username: postgres
+Password: example
+Database: my_db
+The Schema: public page appears.
+
+
+38)Specify a LastName, FirstMidName, and EnrollmentDate. Click Save.
+Kara
+Laplandyan
+2023-09-09
+
+
+39)docker stop db-admin dotnet-app db
+
+40)Better productivity with Docker Compose
+   In this section, we’ll create a Compose file to start our dotnet-docker app, Adminer,
+   and the Postg  reSQL database using a single command.
+   Open the dotnet-docker directory in your IDE or a text editor and create a 
+   new file named docker-compose.yml. Copy and paste the following contents into the file.
+
+41)docker-compose up --build -d
+
+
+42)Then, you can use docker-compose stop to stop the containers and docker-compose down to remove them.
+
+43)The .env file
+	Docker Compose will automatically read environment variables from a 
+	.env file if it is available. Since our Compose file requires POSTGRES_PASSWORD to be set,
+	 we create an .env file and add the following content:
+
+
+//________________---------------------------------__________________________--------------------------------------------
+
+
+44)dotnet new xunit -n myWebApp.Tests -o tests
+	Next, we’ll update the test project and add the Testcontainers for 
+	.NET package that allows us to run tests against Docker resources 
+	(PostgreSQL container). Switch to the tests directory and run the following command:
+
+45)cd tests
+46) dotnet add package Testcontainers --version latest
+
+Add a test
+Open the test project in your favorite IDE and replace the contents of UnitTest1.cs with the following code:
+
+47)Open the test project in your favorite IDE and replace the contents of UnitTest1.cs with the following code:
+
+
+
